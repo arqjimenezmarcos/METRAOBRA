@@ -1,0 +1,88 @@
+<!DOCTYPE html><html lang="es" data-theme="light"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#4a5230"><meta name="apple-mobile-web-app-capable" content="yes"><title>Cómputos métricos</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"><style>:root{--bg:#f3eedc;--bg2:#e9e2c8;--fg:#232618;--mut:#5a5f3f;--acc:#4a5230;--accf:#f3eedc;--line:#d6cfae}
+[data-theme=dark]{--bg:#141710;--bg2:#1e2316;--fg:#ece7d2;--mut:#b4b090;--acc:#a8b574;--accf:#141710;--line:#2d3421}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font:300 16px/1.55 'Outfit',system-ui,sans-serif;background:var(--bg);color:var(--fg);max-width:560px;margin:0 auto;min-height:100vh;padding:0 1rem 6rem}
+button,input,select{font:inherit;color:inherit}
+header{position:sticky;top:0;background:var(--bg);padding:max(.8rem,env(safe-area-inset-top)) 0 .7rem;z-index:5}
+.top{display:flex;justify-content:space-between;align-items:center}
+h1{font-size:1.4rem;font-weight:500}h2{font-size:1.6rem;font-weight:500;margin:.6rem 0}h3{font-size:1.1rem;font-weight:500;margin:1.2rem 0 .4rem}
+.mut,small{color:var(--mut)}
+.ib{background:none;border:1px solid var(--line);width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:1.1rem}
+.bar{height:6px;background:var(--line);border-radius:9px;overflow:hidden;margin-top:.5rem}.bar i{display:block;height:100%;background:var(--acc);transition:width .4s}
+nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:560px;display:flex;background:var(--bg2);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:0;padding:1rem .3rem;cursor:pointer;color:var(--mut)}nav button.on{color:var(--acc);font-weight:600;box-shadow:inset 0 3px var(--acc)}
+.chips,.tabs{display:flex;gap:.5rem;overflow-x:auto;padding:.3rem 0 .8rem;scrollbar-width:none}
+.chip,.tabs button{flex:none;padding:.5rem 1rem;border:1px solid var(--line);background:none;border-radius:99px;cursor:pointer}
+.chip.on,.tabs button.on{background:var(--acc);color:var(--accf);border-color:var(--acc)}
+input,select{width:100%;padding:.8rem 1rem;background:var(--bg2);border:1px solid var(--line);border-radius:10px;margin:.3rem 0 .6rem}
+.card{display:flex;justify-content:space-between;align-items:center;gap:1rem;width:100%;text-align:left;background:var(--bg2);border:0;border-left:4px solid var(--acc);padding:1rem;margin-bottom:.7rem;cursor:pointer}
+.card b{display:block;font-weight:500;font-size:1.05rem}.card small{display:block}.card em{display:block;font-style:normal;font-size:.92rem;margin-top:.3rem}.card i{font-style:normal;font-size:1.4rem;color:var(--acc)}
+.btn{display:block;width:100%;padding:1rem;margin-top:1.2rem;background:var(--acc);color:var(--accf);border:1px solid var(--acc);cursor:pointer;font-weight:500;border-radius:10px}.btn.ghost{background:none;color:var(--acc)}
+.back{background:none;border:0;color:var(--acc);padding:.5rem 0;cursor:pointer}
+ol,ul{padding-left:1.3rem}li{margin:.5rem 0}
+.tip{background:var(--bg2);border-left:4px solid var(--acc);padding:1rem;margin:1.2rem 0}
+.kr{display:flex;gap:1rem;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--line)}kbd{min-width:3.4rem;text-align:center;padding:.2rem .5rem;background:var(--acc);color:var(--accf);border-radius:6px;font:500 .9rem monospace}
+.pr{margin:1rem 0}.pr span{margin-right:.5rem}
+
+.fs{display:grid;grid-template-columns:1fr 1fr;gap:0 .8rem}.fs label{font-size:.88rem;color:var(--mut)}
+.res{background:var(--bg2);border-left:4px solid var(--acc);padding:.6rem 1rem;margin-top:.6rem}.res div{display:flex;justify-content:space-between;gap:1rem;padding:.4rem 0;border-bottom:1px solid var(--line)}.res div:last-child{border:0}
+.it{display:grid;grid-template-columns:1fr 110px 36px;gap:.6rem;align-items:center;padding:.7rem 0;border-bottom:1px solid var(--line)}.it input{margin:0}.it b{font-weight:500;display:block}
+.x{background:none;border:0;font-size:1.5rem;color:var(--mut);cursor:pointer}
+.tot{display:flex;justify-content:space-between;font-size:1.3rem;padding:1rem 0}
+#toast{position:fixed;bottom:5rem;left:50%;transform:translateX(-50%);background:var(--acc);color:var(--accf);padding:.7rem 1.2rem;border-radius:99px;opacity:0;transition:opacity .3s;pointer-events:none}
+</style></head><body>
+<header><div class="top"><h1>Cómputos métricos</h1><button class="ib" id="th" aria-label="Modo claro u oscuro">◐</button></div><div class="tabs" id="tb"></div></header>
+<main id="m"></main><div id="toast"></div>
+<script>
+const $=s=>document.querySelector(s),E=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const get=k=>{try{return localStorage.getItem(k)}catch(e){return null}},set=(k,x)=>{try{localStorage.setItem(k,x)}catch(e){}};
+let dk=get('t')?get('t')=='d':matchMedia('(prefers-color-scheme:dark)').matches;
+const theme=()=>{document.documentElement.dataset.theme=dk?'dark':'light';set('t',dk?'d':'l')};theme();$('#th').onclick=()=>{dk=!dk;theme()};
+const F=x=>x.toLocaleString('es-VE',{maximumFractionDigits:2});
+/* Dosificación referencial por m³: [bolsas de 42,5 kg, arena m³, piedra m³, agua m³]. Ajusta a tu diseño de mezcla. */
+const MIX={140:[7.01,.56,.55,.184],175:[8.43,.54,.55,.185],210:[9.73,.52,.53,.186],250:[11.5,.5,.51,.19]};
+const REB={'3/8':9.5,'1/2':12.7,'5/8':15.9,'3/4':19.1,'1':25.4};
+/* Cada cálculo: f = campos [id, etiqueta, unidad (o lista de opciones), valor inicial]; r = fórmulas */
+const C=[
+{n:'Concreto',nota:'Sirve para losas, vigas, columnas y zapatas: ingresa las dimensiones de una pieza y su cantidad.',
+ f:[['L','Largo','m',1],['A','Ancho','m',1],['H','Altura o espesor','m',.15],['n','Cantidad','und',1],['fc','Resistencia f\'c (kg/cm²)',[140,175,210,250],210],['w','Desperdicio','%',5]],
+ r:v=>{const m=v.L*v.A*v.H*v.n*(1+v.w/100),t=MIX[v.fc];return{rows:[['Volumen',m,'m³'],['Cemento',m*t[0],'bolsas'],['Arena',m*t[1],'m³'],['Piedra',m*t[2],'m³'],['Agua',m*t[3]*1000,'L']],add:[{d:`Concreto f'c ${v.fc}`,u:'m³',q:m}]}}},
+{n:'Muros',nota:'Cantidad de bloques o ladrillos y mortero para un muro.',
+ f:[['L','Largo del muro','m',5],['H','Altura','m',2.7],['V','Vanos (puertas y ventanas)','m²',2],['bl','Largo del bloque','cm',40],['bh','Alto del bloque','cm',20],['e','Espesor del muro','cm',15],['j','Junta','cm',1],['w','Desperdicio','%',5]],
+ r:v=>{const a=Math.max(v.L*v.H-v.V,0),pm=1/(((v.bl+v.j)/100)*((v.bh+v.j)/100)),b=a*pm*(1+v.w/100),mo=a*(v.e/100)*(1-pm*(v.bl/100)*(v.bh/100));return{rows:[['Área neta',a,'m²'],['Bloques por m²',pm,'und'],['Bloques totales',Math.ceil(b),'und'],['Mortero',mo,'m³']],add:[{d:'Bloques',u:'und',q:Math.ceil(b)},{d:'Mortero de pega',u:'m³',q:mo}]}}},
+{n:'Tierra',nota:'Excavación o relleno con esponjamiento y viajes de camión.',
+ f:[['L','Largo','m',10],['A','Ancho','m',5],['P','Profundidad','m',1],['s','Esponjamiento','%',25],['c','Capacidad del camión','m³',12]],
+ r:v=>{const b=v.L*v.A*v.P,s=b*(1+v.s/100);return{rows:[['Volumen en banco',b,'m³'],['Volumen suelto',s,'m³'],['Viajes de camión',v.c?Math.ceil(s/v.c):0,'viajes']],add:[{d:'Excavación',u:'m³',q:b},{d:'Transporte de material',u:'m³',q:s}]}}},
+{n:'Acero',nota:'Peso del acero de refuerzo con la fórmula d²/162 (d en mm).',
+ f:[['d','Diámetro (pulgadas)',Object.keys(REB),'1/2'],['Lt','Longitud total','m',100],['Lb','Largo de la barra','m',12],['w','Desperdicio','%',7]],
+ r:v=>{const kg=REB[v.d]**2/162,t=v.Lt*(1+v.w/100);return{rows:[['Peso por metro',kg,'kg/m'],['Peso total',kg*t,'kg'],['Barras',v.Lb?Math.ceil(t/v.Lb):0,'und']],add:[{d:`Acero ø ${v.d}"`,u:'kg',q:kg*t}]}}},
+{n:'Pintura',nota:'Litros de pintura según el área y el rendimiento del fabricante.',
+ f:[['a','Área a pintar','m²',50],['m','Manos','',2],['r','Rendimiento','m²/L',10]],
+ r:v=>{const l=v.r?v.a*v.m/v.r:0;return{rows:[['Pintura necesaria',l,'L'],['Galones (3,785 L)',Math.ceil(l/3.785),'gal']],add:[{d:'Pintura',u:'L',q:l}]}}}
+];
+let L=[],cur=0;try{L=JSON.parse(get('lista')||'[]')}catch(e){}
+const save=()=>set('lista',JSON.stringify(L));
+const toast=t=>{const e=$('#toast');e.textContent=t;e.style.opacity=1;setTimeout(()=>e.style.opacity=0,1500)};
+function tabs(){
+  $('#tb').innerHTML=[...C.map(c=>c.n),`Lista (${L.length})`].map((n,i)=>`<button class="${i==cur?'on':''}" data-i="${i}">${n}</button>`).join('');
+  document.querySelectorAll('#tb button').forEach(b=>b.onclick=()=>{cur=+b.dataset.i;show()});
+}
+function show(){tabs();cur<C.length?calc():lista();scrollTo(0,0)}
+function calc(){
+  const c=C[cur];
+  $('#m').innerHTML=`<h2>${c.n}</h2><p class="mut">${c.nota}</p><div class="fs" style="margin-top:.8rem">${c.f.map(([k,l,u,d])=>Array.isArray(u)?`<label>${l}<select id="f_${k}">${u.map(o=>`<option${o==d?' selected':''}>${o}</option>`).join('')}</select></label>`:`<label>${l}${u?` (${u})`:''}<input id="f_${k}" inputmode="decimal" value="${d}"></label>`).join('')}</div><div class="res" id="rs"></div><button class="btn" id="ad">Agregar a la lista</button>`;
+  const run=()=>{const v={};c.f.forEach(([k])=>{const e=$('#f_'+k);v[k]=e.tagName=='SELECT'?e.value:(+String(e.value).replace(',','.')||0)});const r=c.r(v);$('#rs').innerHTML=r.rows.map(([a,b,u])=>`<div><span>${a}</span><b>${F(b)} ${u}</b></div>`).join('');return r};
+  document.querySelectorAll('.fs input,.fs select').forEach(e=>e.oninput=run);run();
+  $('#ad').onclick=()=>{run().add.forEach(a=>L.push({...a,p:0}));save();tabs();toast('Agregado a la lista')};
+}
+function lista(){
+  $('#m').innerHTML='<h2>Lista de partidas</h2>'+(L.length?L.map((x,i)=>`<div class="it"><div><b>${E(x.d)}</b><small>${F(x.q)} ${x.u}</small></div><input data-i="${i}" inputmode="decimal" placeholder="Precio unit." value="${x.p||''}"><button class="x" data-x="${i}" aria-label="Quitar">×</button></div>`).join('')+'<div class="tot"><span>Total</span><b id="tt"></b></div><button class="btn" id="cp">Copiar resumen</button><button class="btn ghost" id="cl">Vaciar lista</button>':'<p class="mut">Aún no hay partidas. Haz un cálculo y toca «Agregar a la lista».</p>');
+  const tot=()=>{const t=L.reduce((s,x)=>s+x.q*(x.p||0),0);if($('#tt'))$('#tt').textContent=F(t)};tot();
+  document.querySelectorAll('.it input').forEach(e=>e.oninput=()=>{L[+e.dataset.i].p=+String(e.value).replace(',','.')||0;save();tot()});
+  document.querySelectorAll('.x').forEach(b=>b.onclick=()=>{L.splice(+b.dataset.x,1);save();show()});
+  if($('#cl'))$('#cl').onclick=()=>{if(confirm('¿Vaciar la lista?')){L=[];save();show()}};
+  if($('#cp'))$('#cp').onclick=()=>{const t=L.map(x=>`${x.d}: ${F(x.q)} ${x.u}${x.p?` x ${F(x.p)} = ${F(x.q*x.p)}`:''}`).join('\n')+`\nTotal: ${$('#tt').textContent}`;try{navigator.clipboard.writeText(t).then(()=>toast('Copiado'),()=>toast('No se pudo copiar'))}catch(e){toast('No se pudo copiar')}};
+}
+show();
+</script></body></html>
